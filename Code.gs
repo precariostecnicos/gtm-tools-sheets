@@ -37,10 +37,9 @@ function getWorkspaces() {
   if (!apiPath) {
     return false;
   }
+  Logger.log("WorkSpace", TagManager.Accounts.Containers.Workspaces.list(apiPath).workspace);
   
-  return TagManager.Accounts.Containers.Workspaces.list(apiPath, {
-    fields: 'workspace(name, workspaceId)'
-  }).workspace;
+  return TagManager.Accounts.Containers.Workspaces.list(apiPath).workspace;
 }
 
 function fetchContainersWithSelectedMarked(aid) {
@@ -128,11 +127,11 @@ function buildRangesObject() {
   
   namedRanges.forEach(function(range) {
     var name = range.getName();
-    if (/(_notes|_json)$/.test(name)) {
-      var bareName = name.replace(/(_notes|_json)$/g, '');
+    if (/(_names|_json)$/.test(name)) {
+      var bareName = name.replace(/(_names|_json)$/g, '');
       rangesObject[bareName] = rangesObject[bareName] || {};
-      if (/_notes$/.test(name)) {
-        rangesObject[bareName].notes = range.getRange();
+      if (/_names$/.test(name)) {
+        rangesObject[bareName].names = range.getRange();
       }
       if (/_json$/.test(name)) {    
         rangesObject[bareName].json = range.getRange();
@@ -147,7 +146,7 @@ function buildRangesObject() {
 
 function updateSingleNote(noteToUpdate, wsid) {
   var json = noteToUpdate.json;
-  json.notes = noteToUpdate.note;
+  json.name = noteToUpdate.name;
   
   var path = 'accounts/' + noteToUpdate.json.accountId + '/containers/' + noteToUpdate.json.containerId + '/workspaces/' + wsid;
 
@@ -171,11 +170,11 @@ function markChangedNotes() {
   }
   
   for (var item in rangesObject) {
-    var notes = rangesObject[item].notes.getValues();
+    var notes = rangesObject[item].names.getValues();
     var json = rangesObject[item].json.getValues();
     notes.forEach(function(note, index) {
-      var cell = rangesObject[item].notes.getCell(index + 1, 1);
-      var jsonNote = JSON.parse(json[index]).notes || '';
+      var cell = rangesObject[item].names.getCell(index + 1, 1);
+      var jsonNote = JSON.parse(json[index]).name || '';
       if (note[0] === jsonNote) {
         cell.setBackground('#fff');
       } else if (note[0] !== jsonNote) {
@@ -195,11 +194,11 @@ function processNotes(action) {
   var selectedContainerId = getContainerIdFromApiPath();
 
   for (var item in rangesObject) {
-    var notes = rangesObject[item].notes.getValues();
+    var notes = rangesObject[item].names.getValues();
     var json = rangesObject[item].json.getValues();
     notes.forEach(function(note, index) {
-      var cell = rangesObject[item].notes.getCell(index + 1, 1);
-      var jsonNote = JSON.parse(json[index]).notes || '';
+      var cell = rangesObject[item].names.getCell(index + 1, 1);
+      var jsonNote = JSON.parse(json[index]).name || '';
       if (note[0] === jsonNote) {
         cell.setBackground('#fff');
       } else if (note[0] !== jsonNote) {
@@ -209,7 +208,7 @@ function processNotes(action) {
         if (action === 'push' && selectedAccountId === rangesObject[item].accountId && selectedContainerId === rangesObject[item].containerId) {
           cell.setBackground('#fff');
           notesToUpdate.push({
-            note: note[0],
+            name: note[0],
             json: JSON.parse(json[index])
           });
         }
@@ -291,7 +290,7 @@ function clearInvalidRanges() {
 
 function setNamedRanges(sheet,rangeName,notesIndex,jsonIndex,colLength) {
   var notesRange = sheet.getRange(3,notesIndex,colLength,1);
-  var notesRangeName = rangeName + '_notes';
+  var notesRangeName = rangeName + '_names';
   SpreadsheetApp.getActiveSpreadsheet().setNamedRange(notesRangeName, SpreadsheetApp.getActiveSpreadsheet().getRange(sheet.getName() + '!' + notesRange.getA1Notation()));
   var jsonRange = sheet.getRange(3,jsonIndex,colLength,1);
   var jsonRangeName = rangeName + '_json';
@@ -343,7 +342,7 @@ function buildTriggerSheet(containerObj) {
     dataRange.setBackground('#fff');
     
     var rangeName = 'triggers_' + containerObj.accountId + '_' + containerObj.containerId;
-    setNamedRanges(sheet,rangeName,triggerLabels.indexOf('Notes') + 1,triggerLabels.indexOf('JSON (do NOT edit!)') + 1,triggersObject.length);
+    setNamedRanges(sheet,rangeName,triggerLabels.indexOf('Trigger name') + 1,triggerLabels.indexOf('JSON (do NOT edit!)') + 1,triggersObject.length);
   
     var formats = triggersObject.map(function(a) {
       return ['@', '@', '@', '@', 'dd/mm/yy at h:mm', '@', '@'];
@@ -380,7 +379,7 @@ function buildVariableSheet(containerObj) {
     dataRange.setBackground('#fff');
     
     var rangeName = 'variables_' + containerObj.accountId + '_' + containerObj.containerId;
-    setNamedRanges(sheet,rangeName,variableLabels.indexOf('Notes') + 1,variableLabels.indexOf('JSON (do NOT edit!)') + 1,variablesObject.length);
+    setNamedRanges(sheet,rangeName,variableLabels.indexOf('Variable name') + 1,variableLabels.indexOf('JSON (do NOT edit!)') + 1,variablesObject.length);
   
     var formats = variablesObject.map(function(a) {
       return ['@', '@', '@', '@', 'dd/mm/yy at h:mm', '@', '@'];
@@ -421,7 +420,7 @@ function buildTagSheet(containerObj) {
     dataRange.setBackground('#fff');
 
     var rangeName = 'tags_' + containerObj.accountId + '_' + containerObj.containerId;
-    setNamedRanges(sheet,rangeName,tagLabels.indexOf('Notes') + 1,tagLabels.indexOf('JSON (do NOT edit!)') + 1,tagsObject.length);
+    setNamedRanges(sheet,rangeName,tagLabels.indexOf('Tag name') + 1,tagLabels.indexOf('JSON (do NOT edit!)') + 1,tagsObject.length);
   
     var formats = tagsObject.map(function(a) {
       return ['@', '@', '@', '@', 'dd/mm/yy at h:mm', '@', '@', '@', '@', '@', '@'];

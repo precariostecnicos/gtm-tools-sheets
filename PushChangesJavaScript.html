@@ -36,7 +36,7 @@
         info.innerHTML = 'Updating notes for ' + obj.json.name + ' (' + count + '/' + length + ').';
         google.script.run.withSuccessHandler(updateSingleNote).withFailureHandler(onError).updateSingleNote(obj, wsid);
       } else {
-        info.innerHTML = '<strong>Done updating ' + length + ' notes!</strong> You can now close this modal.<br/><br/>Don\'t forget that you still need to <strong>publish</strong> or <strong>create a version from</strong> the workspace "' + wsname + '" in order to see the notes when you build the documentation again.<br/><br/>You can also click <a href="#" id="createVersion">here</a> to create a version of the workspace at your own risk.';
+        info.innerHTML = '<strong>Done updating ' + length + ' names!</strong> You can now close this modal.<br/><br/>Don\'t forget that you still need to <strong>publish</strong> or <strong>create a version from</strong> the workspace "' + wsname + '" in order to see the notes when you build the documentation again.<br/><br/>You can also click <a href="#" id="createVersion">here</a> to create a version of the workspace at your own risk.';
         document.querySelector('#createVersion').addEventListener('click', function(e) {
           e.preventDefault();
           info.innerHTML = 'Creating version...';
@@ -73,6 +73,7 @@
       push.disabled = false;
       workspaces = arraySortByName(workspaces);
       workspaces.forEach(function(workspace) {
+      console.log("Workspace 2", workspace)
         var option = document.createElement('option');
         option.value = workspace.workspaceId;
         option.innerHTML = workspace.name;
